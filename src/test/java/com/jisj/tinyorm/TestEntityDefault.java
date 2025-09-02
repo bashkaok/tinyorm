@@ -1,6 +1,7 @@
 package com.jisj.tinyorm;
 
 import com.jisj.tinyorm.annotation.CrudDdl;
+import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +24,7 @@ import java.sql.SQLException;
 public class TestEntityDefault {
     @Id
     private long id;
+    @Column(unique = true)
     private String name;
 
 //    @ResultMapper

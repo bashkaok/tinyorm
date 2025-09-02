@@ -102,7 +102,8 @@ class EntityHelper {
      */
     static String getColumnName(Field field) {
         return field.getAnnotation(Column.class) == null ? field.getName() :
-                field.getAnnotation(Column.class).name();
+                field.getAnnotation(Column.class).name().isEmpty() ? field.getName() :
+                        field.getAnnotation(Column.class).name();
     }
 
     /**

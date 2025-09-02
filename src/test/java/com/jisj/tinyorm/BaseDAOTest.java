@@ -54,8 +54,8 @@ class BaseDAOTest {
         List<TestEntityDefault> result = daoDef.getAll().toList();
         assertEquals(recCount, result.size());
         for (long i = 1L; i <= recCount; i++) {
-            assertEquals(i, result.get((int) i-1).getId());
-            assertEquals("Row-" + i, result.get((int) i-1).getName());
+            assertEquals(i, result.get((int) i - 1).getId());
+            assertEquals("Row-" + i, result.get((int) i - 1).getName());
         }
 
     }
@@ -115,5 +115,18 @@ class BaseDAOTest {
     void find() throws SQLException {
         assertEquals(2, daoAnn.find("RecId=? OR name=?", 10L, "Row-9").size());
         assertEquals(20, daoAnn.find("name LIKE ?", "Row%").size());
+    }
+
+    @Test
+    void query() throws SQLException {
+        assertEquals(2, daoAnn.query("""
+                        SELECT * FROM tblEntityAnnotated
+                        WHERE RecId=? OR name=?""",
+                10L, "Row-9").size());
+        assertEquals(20, daoAnn.query("""
+                        SELECT * FROM tblEntityAnnotated
+                        WHERE name LIKE ?""",
+                "Row%").size());
+
     }
 }

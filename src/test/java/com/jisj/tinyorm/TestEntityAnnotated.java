@@ -27,6 +27,7 @@ public class TestEntityAnnotated {
     @Id
     @Column(name = "RecID")
     private long id;
+    @Column(unique = true)
     private String name;
 
     @ResultMapper

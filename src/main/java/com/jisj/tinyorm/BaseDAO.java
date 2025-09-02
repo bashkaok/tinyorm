@@ -173,8 +173,13 @@ public class BaseDAO<T, ID> implements DAO<T, ID> {
         if (whereClause == null || whereClause.isEmpty())
             throw new IllegalStateException("Where clause is empty or null");
         final String SQL = "SELECT * FROM %s WHERE %s".formatted(getTableName(), whereClause);
+        return query(SQL, args);
+    }
+
+    @Override
+    public List<T> query(String sqlQuery, Object... args) throws SQLException {
         try (var con = dataSource.getConnection();
-             var st = con.prepareStatement(SQL)) {
+             var st = con.prepareStatement(sqlQuery)) {
             setParameters(st, args);
             ResultSet rs = st.executeQuery();
             List<T> result = new ArrayList<>();
@@ -182,11 +187,6 @@ public class BaseDAO<T, ID> implements DAO<T, ID> {
                 result.add(mapper.apply(rs));
             return result;
         }
-    }
-
-    @Override
-    public List<T> query(String sqlQuery, Object... args) {
-        return List.of();
     }
 
     @Override
