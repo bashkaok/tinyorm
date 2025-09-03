@@ -3,6 +3,7 @@ package com.jisj.tinyorm;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,9 +15,9 @@ class EntityHelperTest {
 
     @Test
     void getGetter() throws NoSuchFieldException, NoSuchMethodException {
-        Field idField = TestEntityDefault.class.getDeclaredField("id");
-        System.out.println(idField.getDeclaringClass().getMethod("getId"));
-        assertEquals("getId", EntityHelper.getGetter(TestEntityDefault.class.getDeclaredField("id")).getName());
+        Field idField = TestEntityDefault.class.getDeclaredField("recId");
+        System.out.println(idField.getDeclaringClass().getMethod("getRecId"));
+        assertEquals("getRecId", EntityHelper.getGetter(TestEntityDefault.class.getDeclaredField("recId")).getName());
     }
 
     @Test
@@ -39,5 +40,19 @@ class EntityHelperTest {
 
         assertDoesNotThrow(() -> EntityHelper.getMapper(TestEntityMapperAnnotation.CorrectMapper.class));
     }
+
+    @Test
+    void newInstance() {
+        Arrays.stream((SimpleJoinEntity.class.getDeclaredConstructors()))
+                .forEach(System.out::println);
+    }
+
+    @Test
+    void genericFields() {
+        SimpleJoinEntity<Integer, Integer, Integer> e = new SimpleJoinEntity<>();
+        Arrays.stream(e.getClass().getDeclaredFields())
+                .forEach(f-> System.out.println(f.toGenericString()));
+    }
+
 
 }

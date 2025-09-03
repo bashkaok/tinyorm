@@ -46,7 +46,7 @@ public class Mapper<R> {
         return entity;
     }
 
-    private static Object getRSValue(ResultSet rs, Class<?> type, String columnName) {
+    static Object getRSValue(ResultSet rs, Class<?> type, String columnName) {
         try {
             if (type == Long.class || type == long.class)
                 return rs.getLong(columnName);
@@ -66,7 +66,9 @@ public class Mapper<R> {
                 return rs.getDouble(columnName);
             else if (type == String.class)
                 return rs.getString(columnName);
-            else throw new IllegalStateException("Unknown data type: " + type);
+            else if (type == Object.class)
+                return rs.getObject(columnName);
+            else throw new IllegalStateException("Unknown data type: " + type + " for column <" + columnName + ">");
 
         } catch (SQLException e) {
             throw new RuntimeException(e);

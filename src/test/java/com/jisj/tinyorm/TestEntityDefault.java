@@ -18,19 +18,19 @@ import java.sql.SQLException;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@CrudDdl(createTableSql = "CREATE TABLE %s (id BIGINT UNIQUE, name VARCHAR(255))",
-        insertSql = "INSERT INTO %s (id, name) VALUES (?,?)",
+@CrudDdl(createTableSql = "CREATE TABLE %s (recId BIGINT UNIQUE, name VARCHAR(255))",
+        insertSql = "INSERT INTO %s (recId, name) VALUES (?,?)",
         updateSql = "UPDATE %s SET name = ?")
 public class TestEntityDefault {
     @Id
-    private long id;
+    private long recId;
     @Column(unique = true)
     private String name;
 
 //    @ResultMapper
     private static TestEntityDefault map(ResultSet rs) throws SQLException {
         return TestEntityDefault.builder()
-                .id(rs.getLong(1))
+                .recId(rs.getLong(1))
                 .name(rs.getString(2))
                 .build();
     }

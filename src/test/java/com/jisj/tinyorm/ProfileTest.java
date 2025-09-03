@@ -32,6 +32,6 @@ class ProfileTest {
         //annotated
         assertEquals("RecID", pa.getIdColumnName());
         //default
-        assertEquals("id", pd.getIdColumnName());
+        assertEquals("recId", pd.getIdColumnName());
     }
 }

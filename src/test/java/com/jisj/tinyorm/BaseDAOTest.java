@@ -47,14 +47,14 @@ class BaseDAOTest {
         final long recCount = 20;
         for (long i = 1L; i <= recCount; i++) {
             assertEquals(1, daoDef.insert(TestEntityDefault.builder()
-                    .id(i)
+                    .recId(i)
                     .name("Row-" + i)
                     .build()));
         }
         List<TestEntityDefault> result = daoDef.getAll().toList();
         assertEquals(recCount, result.size());
         for (long i = 1L; i <= recCount; i++) {
-            assertEquals(i, result.get((int) i - 1).getId());
+            assertEquals(i, result.get((int) i - 1).getRecId());
             assertEquals("Row-" + i, result.get((int) i - 1).getName());
         }
 
@@ -63,7 +63,7 @@ class BaseDAOTest {
     @Test
     void update() throws SQLException {
         TestEntityDefault e = TestEntityDefault.builder()
-                .id(100)
+                .recId(100)
                 .name("Row=100")
                 .build();
         assertEquals(1, daoDef.insert(e));
@@ -72,14 +72,14 @@ class BaseDAOTest {
         assertEquals(1, daoDef.update(e));
         assertEquals(e, daoDef.getById(100L).orElseThrow());
         //unexist record
-        e.setId(500);
+        e.setRecId(500);
         assertEquals(0, daoDef.update(e));
     }
 
     @Test
     void delete() throws SQLException {
         TestEntityDefault e = TestEntityDefault.builder()
-                .id(1000)
+                .recId(1000)
                 .name("Row=1000")
                 .build();
         assertEquals(1, daoDef.insert(e));
