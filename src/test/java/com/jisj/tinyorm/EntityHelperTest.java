@@ -54,5 +54,11 @@ class EntityHelperTest {
                 .forEach(f-> System.out.println(f.toGenericString()));
     }
 
+    @Test
+    void getCreateTableStatement() {
+        assertEquals("CREATE TABLE IF NOT EXISTS %s", EntityHelper.getCreateTableStatement(TestEntityHelper.Jakarta.class));
+        assertEquals("CREATE TABLE %s", EntityHelper.getCreateTableStatement(TestEntityHelper.Native.class));
+    }
+
 
 }

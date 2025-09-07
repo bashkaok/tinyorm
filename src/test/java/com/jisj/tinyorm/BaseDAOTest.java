@@ -16,6 +16,7 @@ class BaseDAOTest {
     private static DataSource ds;
     private static DAO<TestEntityAnnotated, Long> daoAnn;
     private static DAO<TestEntityDefault, Long> daoDef;
+    private static DAO<TestEntityGenerateKey, Integer> daoKey;
 
     @BeforeAll
     static void setUp() throws SQLException {
@@ -30,6 +31,9 @@ class BaseDAOTest {
         daoDef = new BaseDAO<>(ds, TestEntityDefault.class);
         daoDef.dropTable();
         daoDef.createTable();
+        daoKey = new BaseDAO<>(ds, TestEntityGenerateKey.class);
+        daoKey.dropTable();
+        daoKey.createTable();
     }
 
     private static void addRecordsIntoAnnotated() throws SQLException {
@@ -61,9 +65,17 @@ class BaseDAOTest {
     }
 
     @Test
+    void create() throws SQLException {
+        assertEquals(1, daoKey.create(TestEntityGenerateKey.builder().name("Record1").build()));
+        assertEquals(2, daoKey.create(TestEntityGenerateKey.builder().name("Record2").build()));
+        assertEquals(10, daoKey.create(TestEntityGenerateKey.builder().id(10).name("Record10").build()));
+
+    }
+
+    @Test
     void update() throws SQLException {
         TestEntityDefault e = TestEntityDefault.builder()
-                .recId(100)
+                .recId(100L)
                 .name("Row=100")
                 .build();
         assertEquals(1, daoDef.insert(e));
@@ -72,14 +84,14 @@ class BaseDAOTest {
         assertEquals(1, daoDef.update(e));
         assertEquals(e, daoDef.getById(100L).orElseThrow());
         //unexist record
-        e.setRecId(500);
+        e.setRecId(500L);
         assertEquals(0, daoDef.update(e));
     }
 
     @Test
     void delete() throws SQLException {
         TestEntityDefault e = TestEntityDefault.builder()
-                .recId(1000)
+                .recId(1000L)
                 .name("Row=1000")
                 .build();
         assertEquals(1, daoDef.insert(e));

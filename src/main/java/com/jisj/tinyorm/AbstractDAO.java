@@ -12,13 +12,13 @@ import java.util.function.Function;
 @SuppressWarnings({"LombokGetterMayBeUsed", "LombokSetterMayBeUsed"})
 abstract class AbstractDAO<T, ID> {
     /**
-     * Default SELECT query. Parameters: {@code tableName, idColumnName}
+     * Default SELECT record query. Parameters: {@code tableName, idColumnName}
      */
-    public static final String SELECT_BY_ID_SQL = "SELECT * FROM %s WHERE %s=?";
+    protected static final String SELECT_BY_ID_SQL = "SELECT * FROM %s WHERE %s=?";
     /**
-     * Default DELETE query. Parameters: {@code tableName, idColumnName}
+     * Default DELETE record query. Parameters: {@code tableName, idColumnName}
      */
-    public static final String DELETE_BY_ID_SQL = "DELETE FROM %s WHERE %s=?";
+    protected static final String DELETE_BY_ID_SQL = "DELETE FROM %s WHERE %s=?";
     /**
      * Mapper {@code ResultSet → entity<T>}
      */
@@ -43,6 +43,10 @@ abstract class AbstractDAO<T, ID> {
      * Update SQL query
      */
     protected String updateStatement;
+    /**
+     * Create table SQl query
+     */
+    protected String createTableStatement;
     /**
      * Delete SQL query
      */
@@ -91,6 +95,18 @@ abstract class AbstractDAO<T, ID> {
     }
 
     /**
+     * Creates the table from specified create operator with connection
+     * @param con connection
+     * @param createStatement create table SQL query
+     * @throws SQLException any database exception
+     */
+    protected static void createTable(Connection con, String createStatement) throws SQLException {
+        try (var st = con.prepareStatement(createStatement)){
+            st.execute();
+        }
+    }
+
+    /**
      * Deletes the record with specified connection
      *
      * @param con connection
@@ -114,11 +130,14 @@ abstract class AbstractDAO<T, ID> {
      * @throws SQLException if parameterIndex does not correspond to a parameter marker in the SQL statement; if a database access error occurs or this method is called on a closed {@code PreparedStatement}
      */
     protected static void setParameters(PreparedStatement st, Object... params) throws SQLException {
+        if (st.getParameterMetaData().getParameterCount() != params.length)
+            throw new IllegalStateException("Unexpected parameters count: %d - expected %d"
+                    .formatted(params.length, st.getParameterMetaData().getParameterCount()));
         int pos = 1;
 
         for (Object p : params) {
             switch (p) {
-                case null -> st.setNull(pos, 0);
+                case null -> st.setNull(pos, Types.NULL);
                 case Long longP -> st.setLong(pos, longP);
                 case Boolean boolP -> st.setBoolean(pos, boolP);
                 case Date dateP -> st.setDate(pos, dateP);

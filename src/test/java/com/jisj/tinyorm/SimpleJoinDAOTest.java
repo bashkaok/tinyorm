@@ -11,18 +11,18 @@ import static com.jisj.tinyorm.TestsEnv.getSqliteDataSource;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SimpleJoinDAOTest {
-    private static DataSource ds;
     private static SimpleJoinDAO<String, Integer, Integer> dao;
 
     @BeforeAll
     static void setUp() throws SQLException {
 //        ds = getH2DataSource();
-        ds = getSqliteDataSource();
+        DataSource ds = getSqliteDataSource();
         assertNotNull(ds);
 
         dao = new SimpleJoinDAO<>(ds, "join_table", "RecId", "master", "slave");
+        dao.createTableStatement = "CREATE TABLE join_table (RecId INT UNIQUE, master BIGINT, slave BIGINT)";
         dao.dropTable();
-        dao.createTable("CREATE TABLE join_table (RecId INT UNIQUE, master BIGINT, slave BIGINT)");
+        dao.createTable();
         dao.insert("a",1,1);
         dao.insert("b",1,2);
         dao.insert("c",9,1);

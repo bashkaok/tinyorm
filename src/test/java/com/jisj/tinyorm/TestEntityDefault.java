@@ -23,7 +23,7 @@ import java.sql.SQLException;
         updateSql = "UPDATE %s SET name = ?")
 public class TestEntityDefault {
     @Id
-    private long recId;
+    private Long recId;
     @Column(unique = true)
     private String name;
 

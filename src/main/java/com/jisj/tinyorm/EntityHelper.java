@@ -1,6 +1,7 @@
 package com.jisj.tinyorm;
 
 import com.jisj.tinyorm.annotation.CaseSensitive;
+import com.jisj.tinyorm.annotation.CrudDdl;
 import com.jisj.tinyorm.annotation.ResultMapper;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
@@ -171,6 +172,34 @@ class EntityHelper {
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Gives a creation table statement from annotations {@code @CrudDdl and @Table}
+     * @param clazz entity or BaseDAO subclass
+     * @return SQL string or empty String
+     */
+    static String getCreateTableStatement(Class<?> clazz) {
+        return getAnnotation(clazz, CrudDdl.class)
+                .map(CrudDdl.class::cast)
+                .map(CrudDdl::createTableSql)
+                .filter(s -> !s.isEmpty())
+                .orElseGet(() -> getAnnotation(clazz, Table.class)
+                        .map(Table.class::cast)
+                        .map(Table::options)
+                        .filter(s -> !s.isEmpty())
+                        .orElse("")
+                );
+    }
+
+    /**
+     * Formats the specified string by specified parameters if string contains format sign '%'
+     * @param str string for format
+     * @param params format parameters
+     * @return formatted string or initial string
+     */
+    static String formatBy(String str, Object... params) {
+        return str.contains("%") ? str.formatted(params) : str;
     }
 
     /**

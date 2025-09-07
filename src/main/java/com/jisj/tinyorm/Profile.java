@@ -58,21 +58,17 @@ final class Profile {
     private void buildProfile() {
         isCaseSensitive = isCaseSensitive(clazz);
         annotationTable = getTableAnnotation(clazz);
+        createTableQuery = formatBy(getCreateTableStatement(clazz), getTableName());
 
         getAnnotation(clazz, CrudDdl.class)
                 .ifPresent(crud -> {
                     insertSQLQuery = assertInsertSQL(((CrudDdl) crud).insertSql());
                     updateSQLQuery = assertUpdateSQL(((CrudDdl) crud).updateSql());
-                    createTableQuery = assertCreateTableSQL(((CrudDdl) crud).createTableSql());
                 });
 
         idField = getIdField(clazz);
         idColumnName = getColumnName(idField);
 
-    }
-
-    private String assertCreateTableSQL(String sql) {
-        return sql.contains("%s") ? sql.formatted(getTableName()) : sql;
     }
 
     private String assertInsertSQL(String sql) {

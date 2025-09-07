@@ -4,8 +4,12 @@ import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import static com.jisj.tinyorm.EntityHelper.formatBy;
+import static com.jisj.tinyorm.EntityHelper.getCreateTableStatement;
 
 /**
  * Implementation of {@code DAO<T,ID>}
@@ -14,6 +18,7 @@ import java.util.stream.StreamSupport;
  * @param <ID> identifier type
  */
 public class BaseDAO<T, ID> extends AbstractDAO<T, ID> implements DAO<T, ID> {
+    private static final Logger log = Logger.getLogger(BaseDAO.class.getName());
     /**
      * Current datasource object
      */
@@ -36,6 +41,9 @@ public class BaseDAO<T, ID> extends AbstractDAO<T, ID> implements DAO<T, ID> {
         setDefaultDeleteStatement();
         insertStatement = profile.insertSQLQuery;
         updateStatement = profile.updateSQLQuery + " WHERE %s=?".formatted(idColumnName);
+        createTableStatement = profile.createTableQuery.isEmpty() ?
+                formatBy(getCreateTableStatement(this.getClass()), tableName) :
+                profile.createTableQuery;
     }
 
     @Override
@@ -47,6 +55,21 @@ public class BaseDAO<T, ID> extends AbstractDAO<T, ID> implements DAO<T, ID> {
              var st = con.prepareStatement(insertStatement)) {
             setParameters(st, profile.getInsertableFieldValues(entity));
             return st.executeUpdate();
+        }
+    }
+
+    @Override
+    public ID create(T entity) throws SQLException {
+        assertEntity(entity);
+        if (insertStatement.isEmpty())
+            throw new IllegalStateException("Insert record SQL statement not found in " + profile.clazz + " or in " + this.getClass());
+        try (var con = dataSource.getConnection();
+             var st = con.prepareStatement(insertStatement)) {
+            setParameters(st, profile.getInsertableFieldValues(entity));
+            st.executeUpdate();
+            ResultSet rs = st.getGeneratedKeys();
+            //noinspection unchecked
+            return rs.next() ? (ID) rs.getObject(1) : null;
         }
     }
 
@@ -138,18 +161,18 @@ public class BaseDAO<T, ID> extends AbstractDAO<T, ID> implements DAO<T, ID> {
 
     @Override
     public void createTable() throws SQLException {
-        final String ddlSql = profile.createTableQuery.isEmpty() ? profile.annotationTable.options() : profile.createTableQuery;
-        if (ddlSql.isEmpty())
-            throw new IllegalStateException("DDL create options are empty in " + profile.clazz +
-                    "\nUse @CrudDdl.createTableSql() or @Table.options() annotations");
-        createTable(ddlSql);
+        if (createTableStatement.isEmpty())
+            throw new IllegalStateException(("DDL create options are empty in table <%s> \n" +
+                    "Use @CrudDdl.createTableSql() | @Table.options() annotations | AbstractDAO.createTableStatement")
+                    .formatted(getTableName()));
+        createTable(createTableStatement);
     }
 
     @Override
     public void createTable(String ddl) throws SQLException {
-        try (var con = dataSource.getConnection();
-             var st = con.prepareStatement(ddl)) {
-            st.execute();
+        try (var con = dataSource.getConnection()) {
+            createTable(con, ddl);
+            log.fine("Table <%s> is created".formatted(getTableName()));
         }
     }
 
@@ -159,6 +182,7 @@ public class BaseDAO<T, ID> extends AbstractDAO<T, ID> implements DAO<T, ID> {
         try (var con = dataSource.getConnection();
              var st = con.prepareStatement(SQL)) {
             st.execute();
+            log.fine("Table <%s> dropped".formatted(getTableName()));
         }
     }
 

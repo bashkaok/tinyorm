@@ -4,6 +4,9 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.List;
 
+import static com.jisj.tinyorm.EntityHelper.formatBy;
+import static com.jisj.tinyorm.EntityHelper.getCreateTableStatement;
+
 /**
  * Join DAO for by one field joining
  *
@@ -48,6 +51,7 @@ public class SimpleJoinDAO<ID, J, I> extends BaseDAO<SimpleJoinEntity<ID, J, I>,
                 tableName,
                 idColumnName);
         setDefaultDeleteStatement();
+        this.createTableStatement = formatBy(getCreateTableStatement(this.getClass()), tableName);
 
         mapper = rs ->
         {

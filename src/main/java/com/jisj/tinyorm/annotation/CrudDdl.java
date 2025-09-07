@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Base operations for an entity
+ * Base operations for an entity or BaseDAO subclasses
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
@@ -26,6 +26,8 @@ public @interface CrudDdl {
 
     /**
      * Create table operator, e.g.:"CREATE TABLE %s (id BIGINT UNIQUE, name VARCHAR(255))" or "CREATE TABLE tblName (id BIGINT UNIQUE, name VARCHAR(255))"
+     * <p>SQL query is saved to protected field {@code AbstractDAO.createTableStatement}</p>
+     *
      * @return create table SQL query
      */
     String createTableSql() default "";

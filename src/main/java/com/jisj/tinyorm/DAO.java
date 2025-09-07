@@ -36,6 +36,14 @@ public interface DAO<T, ID> {
     int insert(T entity) throws SQLException;
 
     /**
+     * Create new record
+     * @param entity entity instance
+     * @return created records {@code <ID>} if the database gives the generated key
+     * @throws SQLException record constraints, any database exceptions
+     */
+    ID create(T entity) throws SQLException;
+
+    /**
      * Read the entity by ID
      *
      * @param id entity ID
