@@ -57,4 +57,13 @@ class SimpleJoinDAOTest {
     void getJoinIds() throws SQLException {
         assertEquals(List.of(1,9), dao.getJoinIds(1));
     }
+
+    @Test
+    void delete() throws SQLException {
+        dao.insert(new SimpleJoinEntity<>("f", 56, 95));
+        assertTrue(dao.getById("f").isPresent());
+        assertEquals(1, dao.delete(56, 95));
+        assertFalse(dao.getById("f").isPresent());
+
+    }
 }

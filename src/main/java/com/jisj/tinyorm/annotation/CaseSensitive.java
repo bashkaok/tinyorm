@@ -15,6 +15,7 @@ public @interface CaseSensitive {
     /**
      * Case-sensitive table names and field names in DB, ex. PostgresSQL
      * <p>If {@code true} - double quotes will be added to table and field names </p>
+     * @return {@code true} if the names and field names in DB are case-sensitive
      */
     boolean caseSensitive() default true;
 }

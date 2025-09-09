@@ -9,7 +9,7 @@ public class TestEntityHelper {
 
     }
 
-    @CrudDdl(createTableSql = "CREATE TABLE %s")
+    @CrudDdl(createTableSql = "CREATE TABLE %s", insertSql = "INSERT INTO %s (name) VALUES(?)", updateSql = "UPDATE %s SET name=?")
     public static class Native {
 
     }

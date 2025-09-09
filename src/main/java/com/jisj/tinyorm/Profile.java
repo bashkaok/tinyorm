@@ -1,7 +1,5 @@
 package com.jisj.tinyorm;
 
-import com.jisj.tinyorm.annotation.CrudDdl;
-
 import java.lang.reflect.Field;
 import java.util.stream.Stream;
 
@@ -42,6 +40,10 @@ final class Profile {
         buildProfile();
     }
 
+    Field getIdField() {
+        return idField;
+    }
+
     /**
      * Gives table name
      *
@@ -59,14 +61,10 @@ final class Profile {
         isCaseSensitive = isCaseSensitive(clazz);
         annotationTable = getTableAnnotation(clazz);
         createTableQuery = formatBy(getCreateTableStatement(clazz), getTableName());
+        insertSQLQuery = formatBy(getInsertRecordStatement(clazz), getTableName());
+        updateSQLQuery = formatBy(getUpdateRecordStatement(clazz), getTableName());
 
-        getAnnotation(clazz, CrudDdl.class)
-                .ifPresent(crud -> {
-                    insertSQLQuery = assertInsertSQL(((CrudDdl) crud).insertSql());
-                    updateSQLQuery = assertUpdateSQL(((CrudDdl) crud).updateSql());
-                });
-
-        idField = getIdField(clazz);
+        idField = EntityHelper.getIdField(clazz);
         idColumnName = getColumnName(idField);
 
     }

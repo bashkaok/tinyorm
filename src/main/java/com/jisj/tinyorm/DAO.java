@@ -15,6 +15,7 @@ import java.util.stream.Stream;
  *     <li>options - DDL create operator</li>
  * </ul>
  * {@code jakarta.persistence.Id} <br>
+ * {@code jakarta.persistence.Transient} <br>
  * {@code jakarta.persistence.Column:}
  * <ul>
  *      <li>name - column name</li>
@@ -64,6 +65,7 @@ public interface DAO<T, ID> {
      * @param entity entity for update
      * @return updated count
      * @throws SQLException when record already exists, any database exception
+     * @throws IllegalStateException whin ID field is null
      */
     int update(T entity) throws SQLException;
 

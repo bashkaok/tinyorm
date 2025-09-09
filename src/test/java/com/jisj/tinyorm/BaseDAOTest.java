@@ -86,6 +86,9 @@ class BaseDAOTest {
         //unexist record
         e.setRecId(500L);
         assertEquals(0, daoDef.update(e));
+        //ID null
+        e.setRecId(null);
+        assertThrowsExactly(IllegalStateException.class, ()-> daoDef.update(e));
     }
 
     @Test

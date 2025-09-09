@@ -6,6 +6,7 @@ import com.jisj.tinyorm.annotation.ResultMapper;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -176,6 +177,7 @@ class EntityHelper {
 
     /**
      * Gives a creation table statement from annotations {@code @CrudDdl and @Table}
+     *
      * @param clazz entity or BaseDAO subclass
      * @return SQL string or empty String
      */
@@ -193,8 +195,36 @@ class EntityHelper {
     }
 
     /**
+     * Gives the insert record statement from annotations {@code @CrudDdl}
+     *
+     * @param clazz entity or BaseDAO subclass
+     * @return SQL string or empty String
+     */
+    static String getInsertRecordStatement(Class<?> clazz) {
+        return getAnnotation(clazz, CrudDdl.class)
+                .map(CrudDdl.class::cast)
+                .map(CrudDdl::insertSql)
+                .orElse("");
+    }
+
+    /**
+     * Gives the update record statement from annotations {@code @CrudDdl}
+     *
+     * @param clazz entity or BaseDAO subclass
+     * @return SQL string or empty String
+     */
+    static String getUpdateRecordStatement(Class<?> clazz) {
+        return getAnnotation(clazz, CrudDdl.class)
+                .map(CrudDdl.class::cast)
+                .map(CrudDdl::updateSql)
+                .orElse("");
+    }
+
+
+    /**
      * Formats the specified string by specified parameters if string contains format sign '%'
-     * @param str string for format
+     *
+     * @param str    string for format
      * @param params format parameters
      * @return formatted string or initial string
      */
@@ -203,15 +233,20 @@ class EntityHelper {
     }
 
     /**
-     * Gives the legal entity fields - excluded FINAL and TRANSIENT
+     * Gives the legal entity fields - excluded FINAL, TRANSIENT and {@code @Transient} annotated
      *
      * @param clazz entity class
      * @return stream of fields
      */
     static Stream<Field> getFields(Class<?> clazz) {
         return Arrays.stream(clazz.getDeclaredFields())
-                .filter(field -> !field.accessFlags().contains(AccessFlag.FINAL))
-                .filter(field -> !field.accessFlags().contains(AccessFlag.TRANSIENT));
+                .filter(EntityHelper::isNotTransient);
+    }
+
+    private static boolean isNotTransient(Field field) {
+        return !field.accessFlags().contains(AccessFlag.FINAL) &&
+                !field.accessFlags().contains(AccessFlag.TRANSIENT) &&
+                field.getAnnotation(Transient.class) == null;
     }
 
     static Stream<Field> getInsertableFields(Class<?> clazz) {

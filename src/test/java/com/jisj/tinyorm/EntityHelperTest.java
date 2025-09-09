@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -58,6 +59,25 @@ class EntityHelperTest {
     void getCreateTableStatement() {
         assertEquals("CREATE TABLE IF NOT EXISTS %s", EntityHelper.getCreateTableStatement(TestEntityHelper.Jakarta.class));
         assertEquals("CREATE TABLE %s", EntityHelper.getCreateTableStatement(TestEntityHelper.Native.class));
+    }
+
+    @Test
+    void getInsertRecordStatement() {
+        assertEquals("INSERT INTO %s (name) VALUES(?)", EntityHelper.getInsertRecordStatement(TestEntityHelper.Native.class));
+    }
+
+    @Test
+    void getUpdateRecordStatement() {
+        assertEquals("UPDATE %s SET name=?", EntityHelper.getUpdateRecordStatement(TestEntityHelper.Native.class));
+    }
+
+    @Test
+    void getFields() {
+        List<String> nonTransient = EntityHelper.getFields(TestEntityDefault.class)
+                .map(Field::getName)
+                .toList();
+        List.of("transientJakarta", "finalField", "transientNative")
+                .forEach(f-> assertFalse(nonTransient.contains(f)));
     }
 
 

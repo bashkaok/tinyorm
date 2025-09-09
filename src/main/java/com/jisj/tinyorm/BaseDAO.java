@@ -8,8 +8,7 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static com.jisj.tinyorm.EntityHelper.formatBy;
-import static com.jisj.tinyorm.EntityHelper.getCreateTableStatement;
+import static com.jisj.tinyorm.EntityHelper.*;
 
 /**
  * Implementation of {@code DAO<T,ID>}
@@ -39,11 +38,16 @@ public class BaseDAO<T, ID> extends AbstractDAO<T, ID> implements DAO<T, ID> {
         setMapper(EntityHelper.getMapper(clazz));
         setDefaultSelectStatement();
         setDefaultDeleteStatement();
-        insertStatement = profile.insertSQLQuery;
-        updateStatement = profile.updateSQLQuery + " WHERE %s=?".formatted(idColumnName);
         createTableStatement = profile.createTableQuery.isEmpty() ?
                 formatBy(getCreateTableStatement(this.getClass()), tableName) :
                 profile.createTableQuery;
+        insertStatement = profile.insertSQLQuery.isEmpty() ?
+                formatBy(getInsertRecordStatement(this.getClass()), tableName) :
+                profile.insertSQLQuery;
+        updateStatement = profile.updateSQLQuery.isEmpty() ?
+                formatBy(getUpdateRecordStatement(this.getClass()), tableName) :
+                profile.updateSQLQuery;
+        updateStatement = updateStatement.isEmpty() ? "" : updateStatement + " WHERE %s=?".formatted(idColumnName);
     }
 
     @Override
@@ -62,7 +66,8 @@ public class BaseDAO<T, ID> extends AbstractDAO<T, ID> implements DAO<T, ID> {
     public ID create(T entity) throws SQLException {
         assertEntity(entity);
         if (insertStatement.isEmpty())
-            throw new IllegalStateException("Insert record SQL statement not found in " + profile.clazz + " or in " + this.getClass());
+            throw new IllegalStateException("Insert record SQL statement not found in %s or DAO %s"
+                    .formatted(profile.clazz, this.getClass()));
         try (var con = dataSource.getConnection();
              var st = con.prepareStatement(insertStatement)) {
             setParameters(st, profile.getInsertableFieldValues(entity));
@@ -80,9 +85,14 @@ public class BaseDAO<T, ID> extends AbstractDAO<T, ID> implements DAO<T, ID> {
 
     @Override
     public int update(T entity) throws SQLException {
+        if (EntityHelper.getFieldValue(profile.getIdField(), entity) == null)
+            throw new IllegalStateException("ID field <%s> is null in %s".formatted(profile.getIdField().getName(), entity));
+
         assertEntity(entity);
         if (updateStatement.isEmpty())
-            throw new IllegalStateException("Update SQL query not found in " + profile.clazz);
+            throw new IllegalStateException("Update SQL query not found in entity %s or DAO %s \n"
+                    .formatted(profile.clazz, this.getClass()) +
+                    "Use @CrudDdl.updateSql() for entity or DAO class, or AbstractDAO.updateStatement");
         final String SQL = updateStatement;
         try (var con = dataSource.getConnection();
              var st = con.prepareStatement(SQL)) {

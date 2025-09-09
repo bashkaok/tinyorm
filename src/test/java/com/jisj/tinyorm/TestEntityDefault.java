@@ -3,6 +3,7 @@ package com.jisj.tinyorm;
 import com.jisj.tinyorm.annotation.CrudDdl;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,6 +27,10 @@ public class TestEntityDefault {
     private Long recId;
     @Column(unique = true)
     private String name;
+    @Transient
+    private int transientJakarta;
+    private final int finalField = 0;
+    private transient int transientNative;
 
 //    @ResultMapper
     private static TestEntityDefault map(ResultSet rs) throws SQLException {

@@ -18,16 +18,18 @@ public class SimpleJoinDAO<ID, J, I> extends BaseDAO<SimpleJoinEntity<ID, J, I>,
     private static final String SELECT_SQL = "SELECT %s, %s, %s FROM %s WHERE %s=?";
     private static final String INSERT_SQL = "INSERT INTO %s (%s, %s, %s) VALUES(?,?,?)";
     private static final String UPDATE_SQL = "UPDATE %s SET %s=?, %s=? WHERE %s=?";
+    private static final String DELETE_SQL = "DELETE FROM %s WHERE %s=? AND %s=?";
     private final String joinColumnName;
     private final String inverseColumnName;
+    private final String deletePairStatement;
 
     /**
      * Create the new SimpleJoinDAO instance
      *
-     * @param dataSource DataSource
-     * @param tableName join table name
-     * @param idColumnName ID column name
-     * @param joinColumnName column name of master table
+     * @param dataSource        DataSource
+     * @param tableName         join table name
+     * @param idColumnName      ID column name
+     * @param joinColumnName    column name of master table
      * @param inverseColumnName column name of joining table
      */
     @SuppressWarnings("unchecked")
@@ -52,6 +54,7 @@ public class SimpleJoinDAO<ID, J, I> extends BaseDAO<SimpleJoinEntity<ID, J, I>,
                 idColumnName);
         setDefaultDeleteStatement();
         this.createTableStatement = formatBy(getCreateTableStatement(this.getClass()), tableName);
+        this.deletePairStatement = DELETE_SQL.formatted(tableName, joinColumnName, inverseColumnName);
 
         mapper = rs ->
         {
@@ -65,6 +68,7 @@ public class SimpleJoinDAO<ID, J, I> extends BaseDAO<SimpleJoinEntity<ID, J, I>,
         };
 
     }
+
     /**
      * Insert the record to join table
      *
@@ -79,6 +83,7 @@ public class SimpleJoinDAO<ID, J, I> extends BaseDAO<SimpleJoinEntity<ID, J, I>,
 
     /**
      * Gives the inverse join IDs by specified master join table value
+     *
      * @param joinColumnValue master join table value
      * @return inverse join IDs
      * @throws SQLException any DB exceptions
@@ -91,6 +96,7 @@ public class SimpleJoinDAO<ID, J, I> extends BaseDAO<SimpleJoinEntity<ID, J, I>,
 
     /**
      * Gives the master join IDs by specified inverse join table value
+     *
      * @param inverseColColumnValue inverse join table value
      * @return master join IDs
      * @throws SQLException any DB exceptions
@@ -99,6 +105,22 @@ public class SimpleJoinDAO<ID, J, I> extends BaseDAO<SimpleJoinEntity<ID, J, I>,
         return find("%s=?".formatted(inverseColumnName), inverseColColumnValue).stream()
                 .map(SimpleJoinEntity::getJoinColumn)
                 .toList();
+    }
+
+    /**
+     * Deletes the pair of joinColumnValue:inverseColumnValue from DB
+     *
+     * @param joinColumnValue    join column value
+     * @param inverseColumnValue inverse table column value
+     * @return count of deleted records - 1
+     * @throws SQLException any database exception
+     */
+    public int delete(J joinColumnValue, I inverseColumnValue) throws SQLException {
+        try (var con = dataSource.getConnection();
+             var st = con.prepareStatement(deletePairStatement)) {
+            setParameters(st, joinColumnValue, inverseColumnValue);
+            return st.executeUpdate();
+        }
     }
 
 
