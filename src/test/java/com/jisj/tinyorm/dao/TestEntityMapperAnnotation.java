@@ -1,4 +1,4 @@
-package com.jisj.tinyorm;
+package com.jisj.tinyorm.dao;
 
 import com.jisj.tinyorm.annotation.ResultMapper;
 import jakarta.persistence.Id;

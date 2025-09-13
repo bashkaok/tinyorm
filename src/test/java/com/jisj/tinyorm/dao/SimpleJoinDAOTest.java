@@ -1,4 +1,4 @@
-package com.jisj.tinyorm;
+package com.jisj.tinyorm.dao;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -7,7 +7,7 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.List;
 
-import static com.jisj.tinyorm.TestsEnv.getSqliteDataSource;
+import static com.jisj.tinyorm.dao.TestsEnv.getSqliteDataSource;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SimpleJoinDAOTest {

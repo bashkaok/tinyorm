@@ -1,4 +1,4 @@
-package com.jisj.tinyorm;
+package com.jisj.tinyorm.dao;
 
 import com.jisj.tinyorm.annotation.CrudDdl;
 import jakarta.persistence.Column;
@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@CrudDdl(createTableSql = "CREATE TABLE %s (id INTEGER UNIQUE, name VARCHAR(255), PRIMARY KEY(\"id\" AUTOINCREMENT))",
+@CrudDdl(createTableSql = "CREATE TABLE %s (id INTEGER UNIQUE, name VARCHAR(255), PRIMARY KEY(id AUTOINCREMENT))",
         insertSql = "INSERT INTO %s (id, name) VALUES (?,?)",
         updateSql = "UPDATE %s SET name = ?")
 public class TestEntityGenerateKey {

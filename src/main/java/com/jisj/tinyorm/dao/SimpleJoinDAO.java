@@ -1,11 +1,13 @@
-package com.jisj.tinyorm;
+package com.jisj.tinyorm.dao;
+
+import com.jisj.tinyorm.utils.Jdbc;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.List;
 
-import static com.jisj.tinyorm.EntityHelper.formatBy;
-import static com.jisj.tinyorm.EntityHelper.getCreateTableStatement;
+import static com.jisj.tinyorm.dao.EntityHelper.formatBy;
+import static com.jisj.tinyorm.dao.EntityHelper.getCreateTableStatement;
 
 /**
  * Join DAO for by one field joining
@@ -118,7 +120,7 @@ public class SimpleJoinDAO<ID, J, I> extends BaseDAO<SimpleJoinEntity<ID, J, I>,
     public int delete(J joinColumnValue, I inverseColumnValue) throws SQLException {
         try (var con = dataSource.getConnection();
              var st = con.prepareStatement(deletePairStatement)) {
-            setParameters(st, joinColumnValue, inverseColumnValue);
+            Jdbc.setParameters(st, joinColumnValue, inverseColumnValue);
             return st.executeUpdate();
         }
     }

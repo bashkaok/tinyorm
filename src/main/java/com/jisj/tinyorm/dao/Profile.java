@@ -1,9 +1,9 @@
-package com.jisj.tinyorm;
+package com.jisj.tinyorm.dao;
 
 import java.lang.reflect.Field;
 import java.util.stream.Stream;
 
-import static com.jisj.tinyorm.EntityHelper.*;
+import static com.jisj.tinyorm.dao.EntityHelper.*;
 import static com.jisj.utils.StringMage.wrapInQuotes;
 
 /**

@@ -1,14 +1,14 @@
-package com.jisj.tinyorm;
+package com.jisj.tinyorm.dao;
+
+import com.jisj.tinyorm.utils.Jdbc;
 
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
-import static com.jisj.tinyorm.EntityHelper.*;
+import static com.jisj.tinyorm.dao.EntityHelper.*;
 
 /**
  * Implementation of {@code DAO<T,ID>}
@@ -57,7 +57,7 @@ public class BaseDAO<T, ID> extends AbstractDAO<T, ID> implements DAO<T, ID> {
             throw new IllegalStateException("Insert SQL query not found in " + profile.clazz);
         try (var con = dataSource.getConnection();
              var st = con.prepareStatement(insertStatement)) {
-            setParameters(st, profile.getInsertableFieldValues(entity));
+            Jdbc.setParameters(st, profile.getInsertableFieldValues(entity));
             return st.executeUpdate();
         }
     }
@@ -70,7 +70,7 @@ public class BaseDAO<T, ID> extends AbstractDAO<T, ID> implements DAO<T, ID> {
                     .formatted(profile.clazz, this.getClass()));
         try (var con = dataSource.getConnection();
              var st = con.prepareStatement(insertStatement)) {
-            setParameters(st, profile.getInsertableFieldValues(entity));
+            Jdbc.setParameters(st, profile.getInsertableFieldValues(entity));
             st.executeUpdate();
             ResultSet rs = st.getGeneratedKeys();
             //noinspection unchecked
@@ -96,7 +96,7 @@ public class BaseDAO<T, ID> extends AbstractDAO<T, ID> implements DAO<T, ID> {
         final String SQL = updateStatement;
         try (var con = dataSource.getConnection();
              var st = con.prepareStatement(SQL)) {
-            setParameters(st, profile.getUpdatableFieldValues(entity));
+            Jdbc.setParameters(st, profile.getUpdatableFieldValues(entity));
             return st.executeUpdate();
         }
     }
@@ -105,7 +105,7 @@ public class BaseDAO<T, ID> extends AbstractDAO<T, ID> implements DAO<T, ID> {
     public Optional<T> getById(ID id) {
         try (var con = dataSource.getConnection();
              var st = con.prepareStatement(selectStatement)) {
-            setParameters(st, id);
+            Jdbc.setParameters(st, id);
             ResultSet rs = st.executeQuery();
             return rs.next() ? Optional.of(mapper.apply(rs)) : Optional.empty();
         } catch (SQLException e) {
@@ -118,24 +118,8 @@ public class BaseDAO<T, ID> extends AbstractDAO<T, ID> implements DAO<T, ID> {
         final String SQL = "SELECT * FROM %s".formatted(tableName);
         try {
             final Connection con = dataSource.getConnection();
-            var st = con.createStatement();
-            var rs = st.executeQuery(SQL);
-            return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.IMMUTABLE) {
-                @Override
-                public boolean tryAdvance(Consumer<? super T> action) {
-                    try {
-                        if (rs.next()) {
-                            action.accept(mapper.apply(rs));
-                            return true;
-                        }
-                        st.close();
-                        con.close();
-                        return false;
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }, false);
+            var st = con.prepareStatement(SQL);
+            return Jdbc.execToStream(st, mapper);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -160,7 +144,7 @@ public class BaseDAO<T, ID> extends AbstractDAO<T, ID> implements DAO<T, ID> {
     public List<T> query(String sqlQuery, Object... args) throws SQLException {
         try (var con = dataSource.getConnection();
              var st = con.prepareStatement(sqlQuery)) {
-            setParameters(st, args);
+            Jdbc.setParameters(st, args);
             ResultSet rs = st.executeQuery();
             List<T> result = new ArrayList<>();
             while (rs.next())

@@ -1,7 +1,9 @@
-package com.jisj.tinyorm;
+package com.jisj.tinyorm.dao;
+
+import com.jisj.tinyorm.Mapper;
+import com.jisj.tinyorm.utils.Jdbc;
 
 import java.sql.*;
-import java.util.function.Function;
 
 /**
  * Abstract DAO class
@@ -22,7 +24,7 @@ abstract class AbstractDAO<T, ID> {
     /**
      * Mapper {@code ResultSet → entity<T>}
      */
-    protected Function<ResultSet, T> mapper;
+    protected Mapper<T> mapper;
     /**
      * DAO table name
      */
@@ -72,7 +74,7 @@ abstract class AbstractDAO<T, ID> {
      * @param mapper function gets the {@code ResultSet} and returns the entity
      * @see com.jisj.tinyorm.annotation.ResultMapper ResultMapper
      */
-    public void setMapper(Function<ResultSet, T> mapper) {
+    public void setMapper(Mapper<T> mapper) {
         this.mapper = mapper;
     }
 
@@ -81,7 +83,7 @@ abstract class AbstractDAO<T, ID> {
      *
      * @return current mapper
      */
-    public Function<ResultSet, T> getMapper() {
+    public Mapper<T> getMapper() {
         return mapper;
     }
 
@@ -116,38 +118,10 @@ abstract class AbstractDAO<T, ID> {
      */
     protected int delete(Connection con, ID id) throws SQLException {
         try (var st = con.prepareStatement(deleteStatement)) {
-            setParameters(st, id);
+            Jdbc.setParameters(st, id);
             return st.executeUpdate();
         }
     }
 
 
-    /**
-     * Sets specified parameters to {@code PreparedStatement} instance
-     *
-     * @param st     PreparedStatement instance
-     * @param params query parameters
-     * @throws SQLException if parameterIndex does not correspond to a parameter marker in the SQL statement; if a database access error occurs or this method is called on a closed {@code PreparedStatement}
-     */
-    protected static void setParameters(PreparedStatement st, Object... params) throws SQLException {
-        if (st.getParameterMetaData().getParameterCount() != params.length)
-            throw new IllegalStateException("Unexpected parameters count: %d - expected %d"
-                    .formatted(params.length, st.getParameterMetaData().getParameterCount()));
-        int pos = 1;
-
-        for (Object p : params) {
-            switch (p) {
-                case null -> st.setNull(pos, Types.NULL);
-                case Long longP -> st.setLong(pos, longP);
-                case Boolean boolP -> st.setBoolean(pos, boolP);
-                case Date dateP -> st.setDate(pos, dateP);
-                case Integer intP -> st.setInt(pos, intP);
-                case Timestamp timeP -> st.setTimestamp(pos, timeP);
-                case Float floatP -> st.setFloat(pos, floatP);
-                case byte[] bytesP -> st.setBytes(pos, bytesP);
-                default -> st.setObject(pos, p);
-            }
-            pos++;
-        }
-    }
 }

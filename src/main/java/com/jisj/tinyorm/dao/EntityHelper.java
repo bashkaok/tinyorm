@@ -1,5 +1,6 @@
-package com.jisj.tinyorm;
+package com.jisj.tinyorm.dao;
 
+import com.jisj.tinyorm.Mapper;
 import com.jisj.tinyorm.annotation.CaseSensitive;
 import com.jisj.tinyorm.annotation.CrudDdl;
 import com.jisj.tinyorm.annotation.ResultMapper;
@@ -13,7 +14,6 @@ import java.lang.reflect.*;
 import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.jisj.utils.StringMage.capitalize;
@@ -114,14 +114,14 @@ class EntityHelper {
      * @param clazz entity class
      * @return mapper function
      */
-    static <R> Function<ResultSet, R> getMapper(Class<?> clazz) {
+    static <R> Mapper<R> getMapper(Class<?> clazz) {
         return findMapper(clazz)
                 .map(method -> assertMapper(method, clazz))
                 .map(method -> {
                     method.setAccessible(true);
                     return method;
                 })
-                .map(method -> (Function<ResultSet, R>) resultSet -> {
+                .map(method -> (Mapper<R>) resultSet -> {
                     try {
 //                        noinspection unchecked
                         return (R) method.invoke(null, resultSet);
@@ -129,7 +129,7 @@ class EntityHelper {
                         throw new RuntimeException(e);
                     }
                 })
-                .orElseGet(() -> Mapper.buildMapper(clazz));
+                .orElseGet(() -> EntityMapper.buildMapper(clazz));
     }
 
     /**

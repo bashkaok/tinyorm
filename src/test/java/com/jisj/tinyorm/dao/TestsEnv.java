@@ -1,4 +1,4 @@
-package com.jisj.tinyorm;
+package com.jisj.tinyorm.dao;
 
 import org.h2.jdbcx.JdbcDataSource;
 import org.sqlite.SQLiteDataSource;
