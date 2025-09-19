@@ -7,12 +7,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
  * Query object
+ * @param <T> result type
  */
 public class Query<T> {
+    private static final Logger log = Logger.getLogger(Query.class.getName());
     private final DataSource dataSource;
     private final Mapper<T> mapper;
     private final String query;
@@ -20,10 +23,11 @@ public class Query<T> {
 
     /**
      * Create new query instance
+     *
      * @param dataSource database DataSource
-     * @param mapper ResultSet → result mapper
-     * @param query SQL query
-     * @param args query parameters
+     * @param mapper     ResultSet → result mapper
+     * @param query      SQL query
+     * @param args       query parameters
      */
     public Query(DataSource dataSource,
                  Mapper<T> mapper,
@@ -58,6 +62,7 @@ public class Query<T> {
             Connection con = dataSource.getConnection();
             PreparedStatement st = con.prepareStatement(query);
             Jdbc.setParameters(st, args);
+            log.fine(st::toString);
             return Jdbc.execToStream(st, mapper);
         } catch (SQLException e) {
             throw new RuntimeException(e);

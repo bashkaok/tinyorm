@@ -38,6 +38,7 @@ public class Jdbc {
                 case Timestamp timeP -> st.setTimestamp(pos, timeP);
                 case Float floatP -> st.setFloat(pos, floatP);
                 case byte[] bytesP -> st.setBytes(pos, bytesP);
+                case Array array -> st.setArray(pos, array);
                 default -> st.setObject(pos, p);
             }
             pos++;
